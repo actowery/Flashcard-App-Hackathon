@@ -35,10 +35,18 @@ app.get('/game', (req, res) => {
        classroom: 'Biology', //test values
        user1: 'Billy Madison',
        user2: 'Happy Gilmore',
-       percent1: 50,
-       percent2: 30,
-       timer: 40,       
+       percent1: 100,
+       percent2: 100,
+       //timer: 0,       
        definition: 'an organism whose cells contain a nucleus and organelles'
+   });      
+});
+
+// badges route
+app.get('/badges', (req, res) => {
+   res.render('badges', { //badges.handlebars 
+       username: 'Billy Madison', //test values
+       count: 0
    });      
 });
 
@@ -69,12 +77,15 @@ io.on('connection', function(socket){
     //get submitted response
     socket.on('answer', function(data){
         
+        console.log('answer received, emitting back to the client!!');
  
         //update shared area 
-        io.emit('answer', data);
+        io.sockets.emit('answer', data);
             
         
     });
+    
+    
 });
 
 

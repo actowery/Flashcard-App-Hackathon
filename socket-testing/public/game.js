@@ -45,7 +45,7 @@ increaseBtn.addEventListener('click', function(){
 });
 
 
-//Listen for events and output the data recieved from server to the DOM
+//Listen for increase percent and call increase percent function
 socket.on('increasePercent', function(){
    increasePercent();
 });

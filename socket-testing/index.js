@@ -36,3 +36,32 @@ io.on('connection', function(socket){
     })
     
 });
+
+
+//Card database stuff
+const mongoose = require('mongoose');
+
+mongoose.connect("mongodb://localhost/flashcards");
+mongoose.connection.on('error', function() {
+  console.log('MongoDB Connection Error. Please make sure that MongoDB is running.');
+  process.exit(1);
+});
+
+// import schema
+const Schema = mongoose.Schema;
+
+// create schema for flash cards
+const CardSchema = new Schema({
+   word: {
+       type: String,
+       required: true
+   },
+   description: {
+       type: String,
+       required: true
+   },
+   image: String
+});
+
+// create 'cards' model and connect it to CardSchema
+mongoose.model('cards', CardSchema);

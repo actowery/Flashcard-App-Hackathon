@@ -1,7 +1,24 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="/">FlashCard Challenge</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav">
+      <li class="nav-item active">
+        <a class="nav-link" href="/game">Games <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/badges">Badges</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
 <div class="container">
     <h1 class="text-center">FlashCard Challenge</h1>
 
-<div class="jumbotron">
+<div class="jumbotron" style="padding-top: 10px;">
     <h3 class="text-center">Match Up:</h3>
     <h3 class="text-center">{{user1}} vs {{user2}}</h3>
     <h3 class="display-4 text-center">Class: {{classroom}}</h3>
@@ -11,40 +28,54 @@
  <!-- NOTE: deleted partials to allow for easier data transfer -->
  
      <!-- shared box for Progress -->
-    <div class="container bg-light" id="sharedWindow">
+    <div class="container bg-light" id="sharedWindow" style="padding-bottom: 10px;">
         <h2>Progress</h2>
-        <div class="card">
+        <div class="card" style="padding-bottom: 20px;">
           <div class="card-body">
               
               <!-- Display Cards for Progress Bars (like a progress bar) -->
               
+             <!-- USER 1 -->
              <p><strong>{{user1}}</strong></p>
              <div id="progressBar1" class="progress-bar bg-success" role="progressbar" aria-valuenow="{{percent1}}"
       aria-valuemin="0" aria-valuemax="100" style="width:{{percent1}}%">
        {{percent1}} % 
               </div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-body">
+              <span id="prog1zero"></span>
+            <!-- USER 2 -->
               <p><strong>{{user2}}</strong></p> 
               <div id="progressBar2" class="progress-bar bg-primary" role="progressbar" aria-valuenow="{{percent2}}"
       aria-valuemin="0" aria-valuemax="100" style="width:{{percent2}}%">
        {{percent2}} % 
               </div>
+              <span id="prog2zero"></span>
+            </div>
             <div id="test-socket"></div>
-       </div>
-        </div>
-          </div>
-    
-        <div class="card">
-          <div class="card-body">
-              <h2>Time Remaining: {{timer}} seconds</h2>
-              
-          </div>
+
+            <h2 style="padding-left:20px;">Time Remaining: <span id="timer">0:00</span></h2>
+          
         </div>
 
     </div>
+</div>
+
+<!-- TEACHER CONTROLS TESTING AREA-->
+<div class="container" id="teacherSettings">
+    <h4>Teacher Settings (here for testing)</h4>
+    <button class="btn btn-secondary btn-sm" type="button" id="1min" onclick="setTimer(60)">1 min.</button>
+    <button class="btn btn-secondary btn-sm" type="button" id="1min" onclick="setTimer(90)">1.5 min.</button>
+    <button class="btn btn-secondary btn-sm" type="button" id="1min" onclick="setTimer(120)">2 min.</button>
+    <button class="btn btn-secondary btn-sm" type="button" id="1min" onclick="setTimer(180)">3 min.</button>
+    <button class="btn btn-secondary btn-sm" type="button" id="1min" onclick="setTimer(300)">5 min.</button>
+    <button class="btn btn-success btn-sm" type="button" id="start-time" onclick="startTimer()">Start</button>
+
+
+
+</div>
+
+
+
+
 
      <!-- individual box for card display and responses -->
     
@@ -52,7 +83,7 @@
         <h3 id="currentHeader">Your Cards</h3>
         <div class="card">
           <div id="word-definition" class="card-body col-sm-6 offset-sm-3">
-             <p>{{definition}}</p>
+             <p id="definition">{{definition}}</p>
              <br><br>
              <div id="response">
                  <input style="height:50px;font-size:14pt;" type="text" id="wordGuess" placeholder="Enter word...">
@@ -69,25 +100,42 @@
 </div>
 <script>
     // make connection
-    const socket = io.connect('https://flashcard-app-hackathon2018.c9users.io/game');
+    //const socket = io.connect('https://flashcard-app-hackathon2018.c9users.io/game');
+    var socket = io.connect();
        
     // define components
     var entry = document.getElementById('wordGuess');
     var submit = document.getElementById('submitGuess');
     var skip = document.getElementById('skipGuess');
-    
+    var output = document.getElementById('test-socket');
     var prog1 = document.getElementById('progressBar1');
     var prog2 = document.getElementById('progressBar2');
+    
+    //not the best variable names, but these show a zero percentage in absence of a visible progress bar
+    var zero1 = document.getElementById('prog1zero');
+    var zero2 = document.getElementById('prog2zero');
+    
+    //var definition = document.getElementById('definition').textContent();
     
     // emit events
     submit.addEventListener('click', function(){
        socket.emit('answer', {
            user: socket.id,
+          //some kind of card id ? 
            word: submit.value
        }) 
+       
+       console.log('"ENTER" BUTTON CLICKED!');
     });
     
-    
+    skip.addEventListener('click', function(){
+       socket.emit('skip', {
+           user: socket.id,
+           word: submit.value
+       }) 
+       
+       console.log('"SKIP" BUTTON CLICKED!');
+    });
     
     // listen for server feedback + UPDATE PROGRESS
     socket.on('answer', function(data){
@@ -95,26 +143,117 @@
         // try changing the HTML of a div to see if it works...
         // need to get the user values to update the proper info
         
+        console.log('someone submitted an answer!!!!!');
+        
+        //output.innerHTML = 'CLIENT: ' + data.user.value + ' ANSWER: ' + data.word.value;
+        
+        
+    });
+    
+    // skip event emitted (not really necessary, just testing)
+    socket.on('skip', function(data){
+        
+        // try changing the HTML of a div to see if it works...
+        // need to get the user values to update the proper info
+        
+        console.log('someone skipped a flashcard!!!!11!!!');
+        
+        //output.innerHTML = 'CLIENT: ' + data.user.value + ' ANSWER: ' + data.word.value;
         
         
     });
     
     
-    
-    
     //function to set progress bar values
     function setProgressValue(user, value){
-        if(user === 'user1'){
+        
+        if(user === 'user1' && value === 0){    //show a zero percent for user1 bar
             prog1.setAttribute('aria-valuenow', value);
             prog1.setAttribute('style', 'width:' + value + '%');
-            prog1.textContent(value + '%');
-        }
-
-        if(user === 'user2'){
-            prog2.setAttribute('aria-valuenow', value);
-            prog2.setAttribute('style', 'width:' + value + '%');
-            prog2.textContent(value + '%');
+            prog1.textContent ='';
+            zero1.innerHTML = "0 %";
+            
+        } else if(user === 'user1'){
+            prog1.innerHTML = '{{percent1}} %';
+            prog1.setAttribute('aria-valuenow', value);
+            prog1.setAttribute('style', 'width:' + value + '%');
+            prog1.textContent = value + '%';
+            
         }
         
+        if (user === 'user2' && value === 0) { //show a zero percent for user2 bar
+            prog2.setAttribute('aria-valuenow', value);
+            prog2.setAttribute('style', 'width:' + value + '%');
+            prog2.textContent = '';
+            zero2.innerHTML = "0 %";
+            
+        } else if(user === 'user2'){
+            prog2.innerHTML = '{{percent2}} %';
+            prog2.setAttribute('aria-valuenow', value);
+            prog2.setAttribute('style', 'width:' + value + '%');
+            prog2.textContent = value + '%';
+        
+        } 
+        
     }
+    
+    // Start Game with 0% progress for both users
+    setProgressValue('user1', 0);
+    setProgressValue('user2', 0);
+    
+    
+    
+    
+    
+    
+    
+    
+    //set timer
+    function setTimer(seconds){
+        
+        let timer = document.getElementById('timer');
+        
+        switch(seconds){
+            case 60: //one minute
+                timer.innerHTML = 01 + ":" + '00';
+                break;
+            case 90: //90 seconds
+                timer.innerHTML = 01 + ":" + 30;
+                break;
+            case 120: //2 minutes
+                timer.innerHTML = 02 + ":" + '00';
+                break;
+            case 180: // 3 minutes
+                timer.innerHTML = 03 + ":" + '00';
+                break;
+            case 300: // 5 minutes
+                timer.innerHTML = 05 + ":" + '00';
+                break;
+            default:
+                break;
+        }
+
+    }
+
+    // starts timer 
+    // source : https://codepen.io/ishanbakshi/pen/pgzNMv
+    function startTimer() {
+        var presentTime = document.getElementById('timer').innerHTML;
+        var timeArray = presentTime.split(/[:]+/);
+        var m = timeArray[0];
+        var s = checkSecond((timeArray[1] - 1));
+        if(s==59){m=m-1}
+        //if(m<0){alert('timer completed')}
+        
+        document.getElementById('timer').innerHTML =
+        m + ":" + s;
+        setTimeout(startTimer, 1000);
+    }
+        
+    function checkSecond(sec) {
+        if (sec < 10 && sec >= 0) {sec = "0" + sec}; // add zero in front of numbers < 10
+        if (sec < 0) {sec = "59"};
+        return sec;
+    }    
+        
 </script>
