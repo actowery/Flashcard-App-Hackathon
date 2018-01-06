@@ -68,7 +68,7 @@ io.on('connection', function(socket){
     
     //get submitted response
     socket.on('answer', function(data){
-        //needs function to add +1 to cards Completed, and update progress for given socket
+        
  
         //update shared area 
         io.emit('answer', data);
