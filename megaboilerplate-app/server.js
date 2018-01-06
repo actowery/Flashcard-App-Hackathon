@@ -11,6 +11,7 @@ var jwt = require('jsonwebtoken');
 var moment = require('moment');
 var request = require('request');
 var socket = require("socket.io");
+var passport 
 
 // Load environment variables from .env file
 dotenv.load();
@@ -23,8 +24,9 @@ var userController = require('./controllers/user');
 var contactController = require('./controllers/contact');
 
 var app = express();
-
-
+//mlab for heroku
+mongoose.connect("mongodb://flash:flash@ds241737.mlab.com:41737/osu-flashcards");
+//local c9 mongoose
 mongoose.connect("mongodb://localhost/flashcards");
 mongoose.connection.on('error', function() {
   console.log('MongoDB Connection Error. Please make sure that MongoDB is running.');

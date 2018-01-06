@@ -23,6 +23,7 @@
     "mongoose": "^4.4.8",
     "morgan": "^1.7.0",
     "nodemailer": "^2.3.0",
+    "passport-local": "^1.0.0",
     "request": "^2.69.0",
     "socket.io": "^2.0.4",
     "sshpk": "^1.13.1"

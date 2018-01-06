@@ -75,6 +75,7 @@ exports.signupPost = function(req, res, next) {
   }
 
   User.findOne({ email: req.body.email }, function(err, user) {
+    if(err){}
     if (user) {
     return res.status(400).send({ msg: 'The email address you have entered is already associated with another account.' });
     }
@@ -84,6 +85,7 @@ exports.signupPost = function(req, res, next) {
       password: req.body.password
     });
     user.save(function(err) {
+    if(err){}
     res.send({ token: generateToken(user), user: user });
     });
   });
@@ -111,6 +113,7 @@ exports.accountPut = function(req, res, next) {
   }
 
   User.findById(req.user.id, function(err, user) {
+    if(err){}
     if ('password' in req.body) {
       user.password = req.body.password;
     } else {
@@ -137,6 +140,7 @@ exports.accountPut = function(req, res, next) {
  */
 exports.accountDelete = function(req, res, next) {
   User.remove({ _id: req.user.id }, function(err) {
+    if(err){}
     res.send({ msg: 'Your account has been permanently deleted.' });
   });
 };
@@ -146,6 +150,7 @@ exports.accountDelete = function(req, res, next) {
  */
 exports.unlink = function(req, res, next) {
   User.findById(req.user.id, function(err, user) {
+    if(err){}
     switch (req.params.provider) {
       case 'facebook':
         user.facebook = undefined;
@@ -166,6 +171,7 @@ exports.unlink = function(req, res, next) {
         return res.status(400).send({ msg: 'Invalid OAuth Provider' });
     }
     user.save(function(err) {
+    if(err){}
       res.send({ msg: 'Your account has been unlinked.' });
     });
   });
@@ -194,7 +200,8 @@ exports.forgotPost = function(req, res, next) {
     },
     function(token, done) {
       User.findOne({ email: req.body.email }, function(err, user) {
-        if (!user) {
+      if(err){}
+      if (!user) {
           return res.status(400).send({ msg: 'The email address ' + req.body.email + ' is not associated with any account.' });
         }
         user.passwordResetToken = token;
@@ -247,6 +254,7 @@ exports.resetPost = function(req, res, next) {
       User.findOne({ passwordResetToken: req.params.token })
         .where('passwordResetExpires').gt(Date.now())
         .exec(function(err, user) {
+          if(err){}
           if (!user) {
             return res.status(400).send({ msg: 'Password reset token is invalid or has expired.' });
           }
@@ -274,6 +282,7 @@ exports.resetPost = function(req, res, next) {
         'This is a confirmation that the password for your account ' + user.email + ' has just been changed.\n'
       };
       transporter.sendMail(mailOptions, function(err) {
+        if(err){}
         res.send({ msg: 'Your password has been changed successfully.' });
       });
     }
@@ -298,12 +307,14 @@ exports.authFacebook = function(req, res) {
 
   // Step 1. Exchange authorization code for access token.
   request.get({ url: accessTokenUrl, qs: params, json: true }, function(err, response, accessToken) {
+    if(err){}
     if (accessToken.error) {
       return res.status(500).send({ msg: accessToken.error.message });
     }
 
     // Step 2. Retrieve user's profile information.
     request.get({ url: graphApiUrl, qs: accessToken, json: true }, function(err, response, profile) {
+      if(err){}
       if (profile.error) {
         return res.status(500).send({ msg: profile.error.message });
       }
@@ -311,6 +322,7 @@ exports.authFacebook = function(req, res) {
       // Step 3a. Link accounts if user is authenticated.
       if (req.isAuthenticated()) {
         User.findOne({ facebook: profile.id }, function(err, user) {
+          if(err){}
           if (user) {
             return res.status(409).send({ msg: 'There is already an existing account linked with Facebook that belongs to you.' });
           }
@@ -326,12 +338,14 @@ exports.authFacebook = function(req, res) {
       } else {
         // Step 3b. Create a new user account or return an existing one.
         User.findOne({ facebook: profile.id }, function(err, user) {
+          if(err){}
           if (user) {
             return res.send({ token: generateToken(user), user: user });
           }
           User.findOne({ email: profile.email }, function(err, user) {
+            if(err){}
             if (user) {
-              return res.status(400).send({ msg: user.email + ' is already associated with another account.' })
+              return res.status(400).send({ msg: user.email + ' is already associated with another account.' });
             }
             user = new User({
               name: profile.name,
@@ -342,6 +356,7 @@ exports.authFacebook = function(req, res) {
               facebook: profile.id
             });
             user.save(function(err) {
+              if(err){}
               return res.send({ token: generateToken(user), user: user });
             });
           });
@@ -372,17 +387,20 @@ exports.authGoogle = function(req, res) {
 
   // Step 1. Exchange authorization code for access token.
   request.post(accessTokenUrl, { json: true, form: params }, function(err, response, token) {
+    if(err){}
     var accessToken = token.access_token;
     var headers = { Authorization: 'Bearer ' + accessToken };
 
     // Step 2. Retrieve user's profile information.
     request.get({ url: peopleApiUrl, headers: headers, json: true }, function(err, response, profile) {
+      if(err){}
       if (profile.error) {
         return res.status(500).send({ message: profile.error.message });
       }
       // Step 3a. Link accounts if user is authenticated.
       if (req.isAuthenticated()) {
         User.findOne({ google: profile.sub }, function(err, user) {
+          if(err){}
           if (user) {
             return res.status(409).send({ msg: 'There is already an existing account linked with Google that belongs to you.' });
           }
@@ -399,6 +417,7 @@ exports.authGoogle = function(req, res) {
       } else {
         // Step 3b. Create a new user account or return an existing one.
         User.findOne({ google: profile.sub }, function(err, user) {
+          if(err){}
           if (user) {
             return res.send({ token: generateToken(user), user: user });
           }
@@ -411,6 +430,7 @@ exports.authGoogle = function(req, res) {
             google: profile.sub
           });
           user.save(function(err) {
+            if(err){}
             res.send({ token: generateToken(user), user: user });
           });
         });
