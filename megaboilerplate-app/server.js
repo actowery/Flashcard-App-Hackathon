@@ -11,7 +11,7 @@ var jwt = require('jsonwebtoken');
 var moment = require('moment');
 var request = require('request');
 var socket = require("socket.io");
-var passport 
+var passport = require("passport");
 
 // Load environment variables from .env file
 dotenv.load();
